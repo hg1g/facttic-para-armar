@@ -1233,9 +1233,18 @@
             renderizarEquipos();
         }
 
-        // Control de alertas
-        let alerta5minMostrada = false;
-        let alertaFinalMostrada = false;
+        // Control de alertas - usa localStorage para persistir entre recargas
+        function alertaYaMostrada(tipo, timerEnd) {
+            if (!timerEnd) return true; // Si no hay timer, no mostrar
+            const key = `facttic_alerta_${tipo}_${timerEnd}`;
+            return localStorage.getItem(key) === 'true';
+        }
+
+        function marcarAlertaMostrada(tipo, timerEnd) {
+            if (!timerEnd) return;
+            const key = `facttic_alerta_${tipo}_${timerEnd}`;
+            localStorage.setItem(key, 'true');
+        }
 
         function mostrarAlerta(tipo) {
             const alerta = document.getElementById('alertaTiempo');
@@ -1304,20 +1313,18 @@
             const ahora = new Date();
             const fin = new Date(estado.config.timer_end);
             const diff = Math.max(0, Math.floor((fin - ahora) / 1000));
+            const timerEnd = estado.config.timer_end;
 
-            // Alerta de 5 minutos (300 segundos)
-            if (diff <= 300 && diff > 0 && !alerta5minMostrada) {
-                alerta5minMostrada = true;
+            // Alerta de 5 minutos (entre 295 y 300 segundos para evitar falsos positivos)
+            if (diff <= 300 && diff >= 295 && !alertaYaMostrada('5min', timerEnd)) {
+                marcarAlertaMostrada('5min', timerEnd);
                 mostrarAlerta('5min');
             }
 
-            // Alerta de tiempo terminado
-            if (diff === 0 && !alertaFinalMostrada) {
-                alertaFinalMostrada = true;
+            // Alerta de tiempo terminado (entre 0 y 3 segundos)
+            if (diff <= 3 && diff >= 0 && !alertaYaMostrada('final', timerEnd)) {
+                marcarAlertaMostrada('final', timerEnd);
                 mostrarAlerta('final');
-                timerGlobal.classList.remove('activo');
-                timerConfirmacion.classList.remove('activo');
-                return;
             }
 
             if (diff === 0) {
@@ -1435,16 +1442,9 @@
             actualizarTimer();
 
             // Polling de config cada 5 segundos como backup (por si Realtime no funciona)
-            let ultimoTimerEnd = null;
             setInterval(async () => {
                 const { data } = await supabase.from('config').select('*').eq('id', 1).single();
                 if (data) {
-                    // Resetear alertas si cambió el timer (nuevo timer iniciado)
-                    if (data.timer_end !== ultimoTimerEnd) {
-                        ultimoTimerEnd = data.timer_end;
-                        alerta5minMostrada = false;
-                        alertaFinalMostrada = false;
-                    }
                     estado.config = data;
                 }
             }, 5000);
