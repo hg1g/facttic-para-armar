@@ -1239,6 +1239,13 @@
                 accionables.push(document.getElementById(`accionable${i}`).value.trim());
             }
 
+            // Si ya hay cierre, pedir confirmación antes de pisar
+            if (estado.equipoSeleccionado.reflexion && estado.equipoSeleccionado.accionables?.length > 0) {
+                if (!confirm('Ya hay un cierre guardado para este equipo. ¿Querés reemplazarlo?')) {
+                    return;
+                }
+            }
+
             const btn = document.getElementById('btnEnviarCierre');
             btn.disabled = true;
             btn.textContent = 'Enviando...';
