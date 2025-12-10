@@ -1549,7 +1549,7 @@
         document.getElementById('btnCambiarEquipo').addEventListener('click', cambiarEquipo);
         document.getElementById('btnTerminamos').addEventListener('click', mostrarPantallaCierre);
         document.getElementById('btnEnviarCierre').addEventListener('click', enviarCierre);
-        document.getElementById('btnCancelarCierre').addEventListener('click', mostrarConfirmacion);
+        document.getElementById('btnCancelarCierre').addEventListener('click', () => mostrarConfirmacion(false));
         document.getElementById('btnNoTerminamos').addEventListener('click', volverAEditarCierre);
 
         // Listeners para actualizar contador de accionables
