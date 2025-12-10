@@ -1198,28 +1198,9 @@
             document.getElementById('cierreEquipoNombre').textContent = equipo.nombre;
             document.getElementById('cierreEquipoNombre').style.color = equipo.color;
 
-            // Buscar si ya hay un cierre existente del equipo (de cualquier participante)
-            let cierreExistente = null;
-            try {
-                const { data } = await supabase
-                    .from('participantes')
-                    .select('reflexion, accionables')
-                    .eq('equipo_id', equipo.id)
-                    .not('reflexion', 'is', null)
-                    .not('accionables', 'is', null)
-                    .limit(1)
-                    .single();
-
-                if (data && data.reflexion && data.accionables) {
-                    cierreExistente = data;
-                }
-            } catch (e) {
-                // No hay cierre existente, está bien
-            }
-
-            // Cargar datos del cierre existente del equipo (si hay)
-            const reflexion = cierreExistente?.reflexion || '';
-            const accionables = cierreExistente?.accionables || [];
+            // Cargar cierre del equipo (si hay)
+            const reflexion = equipo.reflexion || '';
+            const accionables = equipo.accionables || [];
 
             document.getElementById('inputReflexion').value = reflexion;
             for (let i = 1; i <= 5; i++) {
@@ -1250,7 +1231,7 @@
 
         // Enviar cierre
         async function enviarCierre() {
-            if (!estado.participante) return;
+            if (!estado.equipoSeleccionado) return;
 
             const reflexion = document.getElementById('inputReflexion').value.trim();
             const accionables = [];
@@ -1263,21 +1244,27 @@
             btn.textContent = 'Enviando...';
 
             try {
+                // Guardar cierre en el equipo
                 const { error } = await supabase
-                    .from('participantes')
+                    .from('equipos')
                     .update({
-                        terminado: true,
                         reflexion,
-                        accionables,
-                        updated_at: new Date().toISOString()
+                        accionables
                     })
-                    .eq('id', estado.participante.id);
+                    .eq('id', estado.equipoSeleccionado.id);
 
                 if (error) throw error;
 
-                estado.participante.terminado = true;
-                estado.participante.reflexion = reflexion;
-                estado.participante.accionables = accionables;
+                // Actualizar estado local
+                estado.equipoSeleccionado.reflexion = reflexion;
+                estado.equipoSeleccionado.accionables = accionables;
+
+                // Actualizar en la lista de equipos también
+                const equipoIdx = estado.equipos.findIndex(e => e.id === estado.equipoSeleccionado.id);
+                if (equipoIdx >= 0) {
+                    estado.equipos[equipoIdx].reflexion = reflexion;
+                    estado.equipos[equipoIdx].accionables = accionables;
+                }
 
                 mostrarPantallaTerminado();
             } catch (error) {

@@ -1016,7 +1016,7 @@
             container.innerHTML = estado.equipos.filter(e => e.activo).map(equipo => {
                 const participantesEquipo = estado.participantes.filter(p => p.equipo_id === equipo.id);
                 const total = participantesEquipo.length;
-                const equipoListo = participantesEquipo.some(p => p.reflexion && p.accionables && p.accionables.length > 0);
+                const equipoListo = equipo.reflexion && equipo.accionables && equipo.accionables.length > 0;
 
                 return `
                     <div class="equipo-admin-card" style="border-color: ${equipo.color}">
@@ -1331,9 +1331,8 @@
                 // Obtener cooperativas únicas en este equipo
                 const cooperativas = [...new Set(participantesEquipo.map(p => p.cooperativa))];
 
-                // Un equipo está LISTO si al menos un participante envió cierre (reflexion + accionables)
-                const participanteConResultados = participantesEquipo.find(p => p.reflexion && p.accionables && p.accionables.length > 0);
-                const equipoListo = !!participanteConResultados;
+                // Un equipo está LISTO si tiene cierre (reflexion + accionables)
+                const equipoListo = equipo.reflexion && equipo.accionables && equipo.accionables.length > 0;
 
                 return `
                     <div class="equipo-proyectable ${equipoListo ? 'todos-terminados' : ''}" style="border-color: ${equipo.color}">
@@ -1368,20 +1367,18 @@
             const equipo = estado.equipos.find(e => e.id === equipoId);
             if (!equipo) return;
 
-            const participantesEquipo = estado.participantes.filter(p => p.equipo_id === equipoId);
-            const participanteConResultados = participantesEquipo.find(p => p.reflexion && p.accionables && p.accionables.length > 0);
-
-            if (!participanteConResultados) return;
+            // Verificar que el equipo tiene cierre
+            if (!equipo.reflexion || !equipo.accionables) return;
 
             // Llenar el modal
             document.getElementById('resultadosTitulo').textContent = equipo.nombre;
             document.getElementById('resultadosTitulo').style.color = equipo.color;
             document.getElementById('resultadosTema').textContent = equipo.tema || '';
-            document.getElementById('resultadosReflexion').textContent = participanteConResultados.reflexion;
+            document.getElementById('resultadosReflexion').textContent = equipo.reflexion;
 
             // Accionables
             const accionablesContainer = document.getElementById('resultadosAccionables');
-            accionablesContainer.innerHTML = participanteConResultados.accionables.map((acc, i) => `
+            accionablesContainer.innerHTML = equipo.accionables.map((acc, i) => `
                 <div class="accionable-item">
                     <div class="numero" style="background: ${equipo.color}">${i + 1}</div>
                     <div class="texto">${acc}</div>
