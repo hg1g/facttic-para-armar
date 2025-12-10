@@ -865,6 +865,10 @@
                 <textarea id="equipoPreguntas" placeholder="¿Pregunta 1?&#10;¿Pregunta 2?"></textarea>
             </div>
             <div class="form-group">
+                <label>Link Google Doc (minutas)</label>
+                <input type="url" id="equipoGoogleDoc" placeholder="https://docs.google.com/...">
+            </div>
+            <div class="form-group">
                 <label>Orden</label>
                 <input type="number" id="equipoOrden" value="0" min="0">
             </div>
@@ -1025,6 +1029,7 @@
                             <div class="contador">${total}</div>
                         </div>
                         <div class="tema">${equipo.tema || ''}</div>
+                        ${equipo.google_doc ? `<a href="${equipo.google_doc}" target="_blank" style="color: var(--color-primary); font-size: 0.85rem;">📄 Google Doc</a>` : ''}
                         <div class="stats">
                             ${equipoListo ? '<span class="terminados">✓ LISTO</span>' : '<span style="color: var(--color-texto-secundario);">En progreso...</span>'}
                         </div>
@@ -1069,6 +1074,7 @@
             document.getElementById('equipoTema').value = equipo?.tema || '';
             document.getElementById('equipoColor').value = equipo?.color || '#3b82f6';
             document.getElementById('equipoPreguntas').value = (equipo?.preguntas || []).join('\n');
+            document.getElementById('equipoGoogleDoc').value = equipo?.google_doc || '';
             document.getElementById('equipoOrden').value = equipo?.orden || 0;
             document.getElementById('modalEquipo').classList.add('activo');
         }
@@ -1085,6 +1091,7 @@
                 tema: document.getElementById('equipoTema').value,
                 color: document.getElementById('equipoColor').value,
                 preguntas: document.getElementById('equipoPreguntas').value.split('\n').filter(p => p.trim()),
+                google_doc: document.getElementById('equipoGoogleDoc').value.trim() || null,
                 orden: parseInt(document.getElementById('equipoOrden').value) || 0
             };
 
@@ -1348,6 +1355,7 @@
                             <div class="contador" style="color: ${equipo.color}">${total}</div>
                         </div>
                         <div class="cooperativas-lista">${cooperativas.join(', ') || '-'}</div>
+                        ${equipo.google_doc ? `<a href="${equipo.google_doc}" target="_blank" style="color: white; font-size: 1rem; margin-top: 0.5rem; display: block;">📄 Abrir Doc</a>` : ''}
                     </div>
                 `;
             }).join('');

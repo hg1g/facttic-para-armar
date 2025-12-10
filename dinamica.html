@@ -193,6 +193,25 @@
             color: var(--color-texto);
         }
 
+        /* Link Google Doc */
+        .btn-google-doc {
+            display: block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 1rem 0;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-google-doc:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         /* Formulario */
         .formulario {
             flex: 1;
@@ -763,6 +782,10 @@
             <ul id="preguntasLista"></ul>
         </div>
 
+        <a href="#" id="linkGoogleDoc" target="_blank" class="btn-google-doc" style="display: none;">
+            📄 Abrir documento del equipo
+        </a>
+
         <div class="acciones">
             <button class="btn" id="btnCambiarEquipo">Cambiar de equipo</button>
             <button class="btn btn-success" id="btnTerminamos">Ya terminamos ✓</button>
@@ -1181,6 +1204,15 @@
                 document.getElementById('confirmacionPreguntas').style.display = 'block';
             } else {
                 document.getElementById('confirmacionPreguntas').style.display = 'none';
+            }
+
+            // Link Google Doc
+            const linkDoc = document.getElementById('linkGoogleDoc');
+            if (equipo.google_doc) {
+                linkDoc.href = equipo.google_doc;
+                linkDoc.style.display = 'block';
+            } else {
+                linkDoc.style.display = 'none';
             }
 
             mostrarPantalla('pantallaConfirmacion');
