@@ -535,10 +535,85 @@
         .mb-1 { margin-bottom: 1rem; }
         .mt-auto { margin-top: auto; }
         .text-center { text-align: center; }
+
+        /* Alerta de tiempo */
+        .alerta-tiempo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: alertaFade 0.3s ease;
+        }
+
+        .alerta-tiempo.activa {
+            display: flex;
+        }
+
+        .alerta-tiempo.alerta-5min {
+            background: rgba(234, 179, 8, 0.95);
+        }
+
+        .alerta-tiempo.alerta-final {
+            background: rgba(239, 68, 68, 0.95);
+        }
+
+        .alerta-tiempo .alerta-contenido {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .alerta-tiempo .alerta-icono {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .alerta-tiempo .alerta-titulo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .alerta-tiempo .alerta-mensaje {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .alerta-tiempo .btn-cerrar-alerta {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @keyframes alertaFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="conexion-indicator" id="conexionIndicator"></div>
+
+    <!-- Alerta de tiempo -->
+    <div class="alerta-tiempo" id="alertaTiempo">
+        <div class="alerta-contenido">
+            <div class="alerta-icono" id="alertaIcono">⏰</div>
+            <div class="alerta-titulo" id="alertaTitulo">¡Quedan 5 minutos!</div>
+            <div class="alerta-mensaje" id="alertaMensaje">Es momento de ir cerrando las conclusiones</div>
+            <button class="btn-cerrar-alerta" onclick="cerrarAlerta()">Entendido</button>
+        </div>
+    </div>
 
     <!-- PANTALLA 0: Registro inicial -->
     <div class="pantalla activa" id="pantallaRegistro">
@@ -1158,6 +1233,61 @@
             renderizarEquipos();
         }
 
+        // Control de alertas
+        let alerta5minMostrada = false;
+        let alertaFinalMostrada = false;
+
+        function mostrarAlerta(tipo) {
+            const alerta = document.getElementById('alertaTiempo');
+            const icono = document.getElementById('alertaIcono');
+            const titulo = document.getElementById('alertaTitulo');
+            const mensaje = document.getElementById('alertaMensaje');
+
+            alerta.classList.remove('alerta-5min', 'alerta-final');
+
+            if (tipo === '5min') {
+                alerta.classList.add('alerta-5min');
+                icono.textContent = '⏰';
+                titulo.textContent = '¡Quedan 5 minutos!';
+                mensaje.textContent = 'Es momento de ir cerrando las conclusiones';
+            } else if (tipo === 'final') {
+                alerta.classList.add('alerta-final');
+                icono.textContent = '🔔';
+                titulo.textContent = '¡Tiempo terminado!';
+                mensaje.textContent = 'Completen el cierre con la reflexión y los accionables';
+            }
+
+            alerta.classList.add('activa');
+
+            // Vibrar si está disponible
+            if (navigator.vibrate) {
+                navigator.vibrate(tipo === 'final' ? [200, 100, 200, 100, 200] : [200, 100, 200]);
+            }
+
+            // Sonido de alerta
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = tipo === 'final' ? 880 : 660;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    audioCtx.close();
+                }, tipo === 'final' ? 800 : 500);
+            } catch (e) {
+                console.log('Audio no disponible');
+            }
+        }
+
+        function cerrarAlerta() {
+            document.getElementById('alertaTiempo').classList.remove('activa');
+        }
+
         // Timer
         function actualizarTimer() {
             const timerGlobal = document.getElementById('timerGlobal');
@@ -1174,6 +1304,21 @@
             const ahora = new Date();
             const fin = new Date(estado.config.timer_end);
             const diff = Math.max(0, Math.floor((fin - ahora) / 1000));
+
+            // Alerta de 5 minutos (300 segundos)
+            if (diff <= 300 && diff > 0 && !alerta5minMostrada) {
+                alerta5minMostrada = true;
+                mostrarAlerta('5min');
+            }
+
+            // Alerta de tiempo terminado
+            if (diff === 0 && !alertaFinalMostrada) {
+                alertaFinalMostrada = true;
+                mostrarAlerta('final');
+                timerGlobal.classList.remove('activo');
+                timerConfirmacion.classList.remove('activo');
+                return;
+            }
 
             if (diff === 0) {
                 timerGlobal.classList.remove('activo');
@@ -1290,9 +1435,16 @@
             actualizarTimer();
 
             // Polling de config cada 5 segundos como backup (por si Realtime no funciona)
+            let ultimoTimerEnd = null;
             setInterval(async () => {
                 const { data } = await supabase.from('config').select('*').eq('id', 1).single();
                 if (data) {
+                    // Resetear alertas si cambió el timer (nuevo timer iniciado)
+                    if (data.timer_end !== ultimoTimerEnd) {
+                        ultimoTimerEnd = data.timer_end;
+                        alerta5minMostrada = false;
+                        alertaFinalMostrada = false;
+                    }
                     estado.config = data;
                 }
             }, 5000);
