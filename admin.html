@@ -1422,12 +1422,12 @@
             // Polling cada 3 segundos como backup (por si Realtime no funciona)
             setInterval(async () => {
                 const { data: participantes } = await supabase.from('participantes').select('*').order('created_at');
-                if (participantes) {
-                    estado.participantes = participantes;
-                    renderizarDashboard();
-                    renderizarParticipantes();
-                    renderizarVistaProyectable();
-                }
+                const { data: equipos } = await supabase.from('equipos').select('*').order('orden');
+                if (participantes) estado.participantes = participantes;
+                if (equipos) estado.equipos = equipos;
+                renderizarDashboard();
+                renderizarParticipantes();
+                renderizarVistaProyectable();
             }, 3000);
         }
 
