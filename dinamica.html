@@ -704,12 +704,12 @@
         <div class="formulario">
             <div class="form-group">
                 <label for="inputNombreRegistro">Tu nombre</label>
-                <input type="text" id="inputNombreRegistro" placeholder="Ej: Juan Pérez" autocomplete="name">
+                <input type="text" id="inputNombreRegistro" placeholder="Ej: Juan Pérez" autocomplete="off">
             </div>
 
             <div class="form-group">
                 <label for="selectCooperativaRegistro">Tu cooperativa</label>
-                <select id="selectCooperativaRegistro">
+                <select id="selectCooperativaRegistro" autocomplete="off">
                     <option value="">Seleccioná tu cooperativa</option>
                 </select>
             </div>
@@ -1133,6 +1133,7 @@
                     };
                 } else {
                     // Crear nuevo participante
+                    console.log('Creando participante:', { device_id: estado.deviceId, nombre, cooperativa, equipo_id: equipoId });
                     const { data, error } = await supabase
                         .from('participantes')
                         .insert({
@@ -1145,7 +1146,9 @@
                         .select()
                         .single();
 
+                    console.log('Respuesta insert:', { data, error });
                     if (error) throw error;
+                    if (!data) throw new Error('No se recibió data del insert');
                     estado.participante = data;
                 }
 
@@ -1189,20 +1192,36 @@
         }
 
         // Mostrar pantalla de cierre
-        function mostrarPantallaCierre() {
+        async function mostrarPantallaCierre() {
             const equipo = estado.equipoSeleccionado;
             document.documentElement.style.setProperty('--equipo-actual', equipo.color);
             document.getElementById('cierreEquipoNombre').textContent = equipo.nombre;
             document.getElementById('cierreEquipoNombre').style.color = equipo.color;
 
-            // Limpiar formulario o cargar datos existentes
-            if (estado.participante.reflexion) {
-                document.getElementById('inputReflexion').value = estado.participante.reflexion;
-            } else {
-                document.getElementById('inputReflexion').value = '';
+            // Buscar si ya hay un cierre existente del equipo (de cualquier participante)
+            let cierreExistente = null;
+            try {
+                const { data } = await supabase
+                    .from('participantes')
+                    .select('reflexion, accionables')
+                    .eq('equipo_id', equipo.id)
+                    .not('reflexion', 'is', null)
+                    .not('accionables', 'is', null)
+                    .limit(1)
+                    .single();
+
+                if (data && data.reflexion && data.accionables) {
+                    cierreExistente = data;
+                }
+            } catch (e) {
+                // No hay cierre existente, está bien
             }
 
-            const accionables = estado.participante.accionables || [];
+            // Cargar datos: primero el cierre existente del equipo, sino los propios
+            const reflexion = cierreExistente?.reflexion || estado.participante.reflexion || '';
+            const accionables = cierreExistente?.accionables || estado.participante.accionables || [];
+
+            document.getElementById('inputReflexion').value = reflexion;
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`accionable${i}`).value = accionables[i - 1] || '';
             }
@@ -1446,17 +1465,21 @@
 
             const ahora = new Date();
             const fin = new Date(estado.config.timer_end);
-            const diff = Math.max(0, Math.floor((fin - ahora) / 1000));
+            const diffReal = Math.floor((fin - ahora) / 1000); // puede ser negativo si ya pasó
+            const diff = Math.max(0, diffReal);
             const timerEnd = estado.config.timer_end;
 
+            // Solo mostrar alertas si el timer está activo o terminó hace menos de 10 segundos
+            const timerReciente = diffReal >= -10;
+
             // Alerta de 5 minutos (entre 295 y 300 segundos para evitar falsos positivos)
-            if (diff <= 300 && diff >= 295 && !alertaYaMostrada('5min', timerEnd)) {
+            if (timerReciente && diff <= 300 && diff >= 295 && !alertaYaMostrada('5min', timerEnd)) {
                 marcarAlertaMostrada('5min', timerEnd);
                 mostrarAlerta('5min');
             }
 
             // Alerta de tiempo terminado (entre 0 y 3 segundos)
-            if (diff <= 3 && diff >= 0 && !alertaYaMostrada('final', timerEnd)) {
+            if (timerReciente && diff <= 3 && diff >= 0 && !alertaYaMostrada('final', timerEnd)) {
                 marcarAlertaMostrada('final', timerEnd);
                 mostrarAlerta('final');
             }
@@ -1548,10 +1571,6 @@
             document.getElementById(`accionable${i}`).addEventListener('input', actualizarContadorAccionables);
         }
 
-        // Enter para continuar registro
-        document.getElementById('inputNombreRegistro').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') continuarRegistro();
-        });
 
         // Inicialización
         async function init() {
