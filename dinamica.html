@@ -1217,9 +1217,9 @@
                 // No hay cierre existente, está bien
             }
 
-            // Cargar datos: primero el cierre existente del equipo, sino los propios
-            const reflexion = cierreExistente?.reflexion || estado.participante.reflexion || '';
-            const accionables = cierreExistente?.accionables || estado.participante.accionables || [];
+            // Cargar datos del cierre existente del equipo (si hay)
+            const reflexion = cierreExistente?.reflexion || '';
+            const accionables = cierreExistente?.accionables || [];
 
             document.getElementById('inputReflexion').value = reflexion;
             for (let i = 1; i <= 5; i++) {
