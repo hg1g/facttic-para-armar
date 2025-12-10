@@ -785,6 +785,7 @@
             <div class="admin-actions">
                 <a href="index.html" target="_blank" class="btn btn-secondary">📊 Ver Informe</a>
                 <button class="btn btn-primary" onclick="abrirVistaProyectable()">📺 Vista Proyectable</button>
+                <button class="btn btn-danger" onclick="resetearParticipantes()">🗑️ Resetear Participantes</button>
                 <button class="btn btn-secondary" onclick="logout()">Salir</button>
             </div>
         </div>
@@ -1234,6 +1235,19 @@
             if (!confirm('¿Eliminar TODOS los participantes? Esta acción no se puede deshacer.')) return;
             await supabase.from('participantes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
             await cargarDatos();
+        }
+
+        async function resetearParticipantes() {
+            if (!confirm('⚠️ ¿Resetear TODOS los participantes?\n\nEsto eliminará todos los registros de participantes.\nEsta acción no se puede deshacer.')) return;
+
+            try {
+                await supabase.from('participantes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                await cargarDatos();
+                alert('✅ Todos los participantes han sido eliminados');
+            } catch (error) {
+                console.error('Error al resetear participantes:', error);
+                alert('❌ Error al resetear participantes');
+            }
         }
 
         // Timer
