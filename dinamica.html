@@ -818,7 +818,7 @@
             </div>
 
             <div class="form-group">
-                <label>5 accionables concretos</label>
+                <label>Accionables concretos</label>
                 <p style="color: var(--color-texto-secundario); font-size: 0.85rem; margin: -0.5rem 0 0.75rem;">El responsable puede ser un área, espacio, persona, cooperativa, comisión, etc.</p>
                 <div class="accionables-lista">
                     <div class="accionable-input">
@@ -846,8 +846,33 @@
                         <input type="text" id="accionable5" placeholder="Accionable...">
                         <input type="text" id="responsable5" class="input-responsable" placeholder="Responsable...">
                     </div>
+                    <div class="accionable-input">
+                        <span class="numero">6</span>
+                        <input type="text" id="accionable6" placeholder="Accionable...">
+                        <input type="text" id="responsable6" class="input-responsable" placeholder="Responsable...">
+                    </div>
+                    <div class="accionable-input">
+                        <span class="numero">7</span>
+                        <input type="text" id="accionable7" placeholder="Accionable...">
+                        <input type="text" id="responsable7" class="input-responsable" placeholder="Responsable...">
+                    </div>
+                    <div class="accionable-input">
+                        <span class="numero">8</span>
+                        <input type="text" id="accionable8" placeholder="Accionable...">
+                        <input type="text" id="responsable8" class="input-responsable" placeholder="Responsable...">
+                    </div>
+                    <div class="accionable-input">
+                        <span class="numero">9</span>
+                        <input type="text" id="accionable9" placeholder="Accionable...">
+                        <input type="text" id="responsable9" class="input-responsable" placeholder="Responsable...">
+                    </div>
+                    <div class="accionable-input">
+                        <span class="numero">10</span>
+                        <input type="text" id="accionable10" placeholder="Accionable...">
+                        <input type="text" id="responsable10" class="input-responsable" placeholder="Responsable...">
+                    </div>
                 </div>
-                <div class="contador-accionables" id="contadorAccionables">0 de 5 completados</div>
+                <div class="contador-accionables" id="contadorAccionables">0 accionables completados</div>
             </div>
 
             <div class="mt-auto" style="padding-top: 1rem;">
@@ -1260,7 +1285,7 @@
             const responsables = equipo.responsables || [];
 
             document.getElementById('inputReflexion').value = reflexion;
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 10; i++) {
                 document.getElementById(`accionable${i}`).value = accionables[i - 1] || '';
                 document.getElementById(`responsable${i}`).value = responsables[i - 1] || '';
             }
@@ -1272,19 +1297,19 @@
         // Actualizar contador de accionables
         function actualizarContadorAccionables() {
             let completados = 0;
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 10; i++) {
                 if (document.getElementById(`accionable${i}`).value.trim()) {
                     completados++;
                 }
             }
 
             const contador = document.getElementById('contadorAccionables');
-            contador.textContent = `${completados} de 5 completados`;
-            contador.classList.toggle('completo', completados === 5);
+            contador.textContent = `${completados} accionable${completados !== 1 ? 's' : ''} completado${completados !== 1 ? 's' : ''}`;
+            contador.classList.toggle('completo', completados > 0);
 
             const reflexion = document.getElementById('inputReflexion').value.trim();
             const btnEnviar = document.getElementById('btnEnviarCierre');
-            btnEnviar.disabled = !(completados === 5 && reflexion);
+            btnEnviar.disabled = !reflexion;
         }
 
         // Enviar cierre
@@ -1294,7 +1319,7 @@
             const reflexion = document.getElementById('inputReflexion').value.trim();
             const accionables = [];
             const responsables = [];
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 10; i++) {
                 accionables.push(document.getElementById(`accionable${i}`).value.trim());
                 responsables.push(document.getElementById(`responsable${i}`).value.trim());
             }
@@ -1624,7 +1649,7 @@
 
         // Listeners para actualizar contador de accionables
         document.getElementById('inputReflexion').addEventListener('input', actualizarContadorAccionables);
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 10; i++) {
             document.getElementById(`accionable${i}`).addEventListener('input', actualizarContadorAccionables);
         }
 
