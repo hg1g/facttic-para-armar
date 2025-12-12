@@ -740,9 +740,19 @@
             color: white;
         }
 
+        .modal-resultados .accionable-item .texto-container {
+            flex: 1;
+        }
+
         .modal-resultados .accionable-item .texto {
             font-size: 1.8rem;
             line-height: 1.4;
+        }
+
+        .modal-resultados .accionable-item .responsable {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
         }
 
         /* Responsive */
@@ -1386,10 +1396,14 @@
 
             // Accionables
             const accionablesContainer = document.getElementById('resultadosAccionables');
+            const responsables = equipo.responsables || [];
             accionablesContainer.innerHTML = equipo.accionables.map((acc, i) => `
                 <div class="accionable-item">
                     <div class="numero" style="background: ${equipo.color}">${i + 1}</div>
-                    <div class="texto">${acc}</div>
+                    <div class="texto-container">
+                        <div class="texto">${acc}</div>
+                        ${responsables[i] ? `<div class="responsable">→ ${responsables[i]}</div>` : ''}
+                    </div>
                 </div>
             `).join('');
 

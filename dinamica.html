@@ -446,7 +446,8 @@
         .pantalla-cierre .accionable-input {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .pantalla-cierre .accionable-input .numero {
@@ -476,6 +477,18 @@
         .pantalla-cierre .accionable-input input:focus {
             outline: none;
             border-color: var(--equipo-actual);
+        }
+
+        .pantalla-cierre .accionable-input input:first-of-type {
+            flex: 2;
+            min-width: 150px;
+        }
+
+        .pantalla-cierre .accionable-input .input-responsable {
+            flex: 1;
+            min-width: 120px;
+            font-size: 0.85rem;
+            padding: 0.75rem 0.875rem;
         }
 
         .pantalla-cierre .contador-accionables {
@@ -727,10 +740,9 @@
             </div>
 
             <div class="form-group">
-                <label for="selectCooperativaRegistro">Tu cooperativa</label>
-                <select id="selectCooperativaRegistro" autocomplete="off">
-                    <option value="">Seleccioná tu cooperativa</option>
-                </select>
+                <label for="inputCooperativaRegistro">Tu cooperativa</label>
+                <input type="text" id="inputCooperativaRegistro" list="listaCooperativas" placeholder="Escribí para buscar..." autocomplete="off">
+                <datalist id="listaCooperativas"></datalist>
             </div>
 
             <div class="mt-auto">
@@ -788,7 +800,7 @@
 
         <div class="acciones">
             <button class="btn" id="btnCambiarEquipo">Cambiar de equipo</button>
-            <button class="btn btn-success" id="btnTerminamos">Ya terminamos ✓</button>
+            <button class="btn btn-success" id="btnTerminamos">Cargar conclusiones ✓</button>
         </div>
     </div>
 
@@ -807,26 +819,32 @@
 
             <div class="form-group">
                 <label>5 accionables concretos</label>
+                <p style="color: var(--color-texto-secundario); font-size: 0.85rem; margin: -0.5rem 0 0.75rem;">El responsable puede ser un área, espacio, persona, cooperativa, comisión, etc.</p>
                 <div class="accionables-lista">
                     <div class="accionable-input">
                         <span class="numero">1</span>
-                        <input type="text" id="accionable1" placeholder="Primer accionable...">
+                        <input type="text" id="accionable1" placeholder="Accionable...">
+                        <input type="text" id="responsable1" class="input-responsable" placeholder="Responsable...">
                     </div>
                     <div class="accionable-input">
                         <span class="numero">2</span>
-                        <input type="text" id="accionable2" placeholder="Segundo accionable...">
+                        <input type="text" id="accionable2" placeholder="Accionable...">
+                        <input type="text" id="responsable2" class="input-responsable" placeholder="Responsable...">
                     </div>
                     <div class="accionable-input">
                         <span class="numero">3</span>
-                        <input type="text" id="accionable3" placeholder="Tercer accionable...">
+                        <input type="text" id="accionable3" placeholder="Accionable...">
+                        <input type="text" id="responsable3" class="input-responsable" placeholder="Responsable...">
                     </div>
                     <div class="accionable-input">
                         <span class="numero">4</span>
-                        <input type="text" id="accionable4" placeholder="Cuarto accionable...">
+                        <input type="text" id="accionable4" placeholder="Accionable...">
+                        <input type="text" id="responsable4" class="input-responsable" placeholder="Responsable...">
                     </div>
                     <div class="accionable-input">
                         <span class="numero">5</span>
-                        <input type="text" id="accionable5" placeholder="Quinto accionable...">
+                        <input type="text" id="accionable5" placeholder="Accionable...">
+                        <input type="text" id="responsable5" class="input-responsable" placeholder="Responsable...">
                     </div>
                 </div>
                 <div class="contador-accionables" id="contadorAccionables">0 de 5 completados</div>
@@ -1006,13 +1024,12 @@
             }).join('');
         }
 
-        // Poblar select de cooperativas
+        // Poblar lista de cooperativas
         function poblarCooperativas() {
-            const selectRegistro = document.getElementById('selectCooperativaRegistro');
-            selectRegistro.innerHTML = '<option value="">Seleccioná tu cooperativa</option>';
-            estado.cooperativas.forEach(coop => {
-                selectRegistro.innerHTML += `<option value="${coop.nombre}">${coop.nombre}</option>`;
-            });
+            const datalist = document.getElementById('listaCooperativas');
+            datalist.innerHTML = estado.cooperativas.map(coop =>
+                `<option value="${coop.nombre}">`
+            ).join('');
         }
 
         // Lógica de sugerencia de balanceo
@@ -1062,7 +1079,7 @@
         // Registro inicial
         function continuarRegistro() {
             const nombre = document.getElementById('inputNombreRegistro').value.trim();
-            const cooperativa = document.getElementById('selectCooperativaRegistro').value;
+            const cooperativa = document.getElementById('inputCooperativaRegistro').value.trim();
 
             if (!nombre) {
                 alert('Por favor ingresá tu nombre');
@@ -1070,7 +1087,14 @@
             }
 
             if (!cooperativa) {
-                alert('Por favor seleccioná tu cooperativa');
+                alert('Por favor ingresá tu cooperativa');
+                return;
+            }
+
+            // Validar que sea una cooperativa de la lista
+            const coopValida = estado.cooperativas.some(c => c.nombre.toLowerCase() === cooperativa.toLowerCase());
+            if (!coopValida) {
+                alert('Por favor seleccioná una cooperativa de la lista');
                 return;
             }
 
@@ -1233,10 +1257,12 @@
             // Cargar cierre del equipo (si hay)
             const reflexion = equipo.reflexion || '';
             const accionables = equipo.accionables || [];
+            const responsables = equipo.responsables || [];
 
             document.getElementById('inputReflexion').value = reflexion;
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`accionable${i}`).value = accionables[i - 1] || '';
+                document.getElementById(`responsable${i}`).value = responsables[i - 1] || '';
             }
 
             actualizarContadorAccionables();
@@ -1267,8 +1293,10 @@
 
             const reflexion = document.getElementById('inputReflexion').value.trim();
             const accionables = [];
+            const responsables = [];
             for (let i = 1; i <= 5; i++) {
                 accionables.push(document.getElementById(`accionable${i}`).value.trim());
+                responsables.push(document.getElementById(`responsable${i}`).value.trim());
             }
 
             // Si ya hay cierre, pedir confirmación antes de pisar
@@ -1288,7 +1316,8 @@
                     .from('equipos')
                     .update({
                         reflexion,
-                        accionables
+                        accionables,
+                        responsables
                     })
                     .eq('id', estado.equipoSeleccionado.id);
 
@@ -1297,12 +1326,14 @@
                 // Actualizar estado local
                 estado.equipoSeleccionado.reflexion = reflexion;
                 estado.equipoSeleccionado.accionables = accionables;
+                estado.equipoSeleccionado.responsables = responsables;
 
                 // Actualizar en la lista de equipos también
                 const equipoIdx = estado.equipos.findIndex(e => e.id === estado.equipoSeleccionado.id);
                 if (equipoIdx >= 0) {
                     estado.equipos[equipoIdx].reflexion = reflexion;
                     estado.equipos[equipoIdx].accionables = accionables;
+                    estado.equipos[equipoIdx].responsables = responsables;
                 }
 
                 mostrarPantallaTerminado();
@@ -1615,6 +1646,14 @@
             renderizarEquipos();
             poblarCooperativas();
             configurarRealtime();
+
+            // Precargar inputs si hay datos guardados
+            if (estado.nombreUsuario) {
+                document.getElementById('inputNombreRegistro').value = estado.nombreUsuario;
+            }
+            if (estado.cooperativaUsuario) {
+                document.getElementById('inputCooperativaRegistro').value = estado.cooperativaUsuario;
+            }
 
             // Timer cada segundo
             estado.timerInterval = setInterval(actualizarTimer, 1000);
