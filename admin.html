@@ -1021,6 +1021,117 @@
             line-height: 1.5;
         }
 
+        /* Modal Informe */
+        .modal-informe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--color-fondo);
+            display: none;
+            z-index: 500;
+            padding: 2rem;
+            flex-direction: column;
+        }
+
+        .modal-informe.activo {
+            display: flex;
+        }
+
+        .modal-informe .informe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .modal-informe .informe-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .modal-informe .informe-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal-informe .informe-content {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .modal-informe .equipo-seccion {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-informe .equipo-seccion:last-child {
+            border-bottom: none;
+        }
+
+        .modal-informe .equipo-titulo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-informe .equipo-tema {
+            color: var(--color-texto-secundario);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .modal-informe .seccion-titulo {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-texto-secundario);
+            margin: 1.5rem 0 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-informe .lista-items {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .modal-informe .lista-items li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .modal-informe .reflexion-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-informe .accionable-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-informe .accionable-item .responsable {
+            color: var(--color-texto-secundario);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .modal-informe .sin-datos {
+            color: var(--color-texto-secundario);
+            font-style: italic;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .admin-header {
@@ -1060,6 +1171,7 @@
             </div>
             <div class="admin-actions">
                 <a href="index.html" target="_blank" class="btn btn-secondary">📊 Ver Informe</a>
+                <button class="btn btn-success" onclick="generarInformeDebate()">📋 Informe Debate</button>
                 <button class="btn btn-primary" onclick="abrirVistaProyectable()">📺 Vista Proyectable</button>
                 <button class="btn btn-secondary" onclick="logout()">Salir</button>
             </div>
@@ -1239,6 +1351,21 @@
                     <!-- Se llena con JS -->
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Informe Debate -->
+    <div class="modal-informe" id="modalInforme">
+        <div class="informe-header">
+            <h1>📋 Informe del Debate</h1>
+            <div class="informe-actions">
+                <button class="btn btn-success" onclick="exportarPDF()">📄 Exportar PDF</button>
+                <button class="btn btn-primary" onclick="copiarInforme()">📋 Copiar texto</button>
+                <button class="btn btn-secondary" onclick="cerrarInforme()">✕ Cerrar</button>
+            </div>
+        </div>
+        <div class="informe-content" id="informeContent">
+            <!-- Se llena con JS -->
         </div>
     </div>
 
@@ -1764,6 +1891,290 @@
 
         function cerrarModalDescripcion() {
             document.getElementById('modalDescripcion').classList.remove('activo');
+        }
+
+        // Informe del debate
+        function generarInformeDebate() {
+            const container = document.getElementById('informeContent');
+            const fecha = new Date().toLocaleDateString('es-AR', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            let html = `<div style="margin-bottom: 2rem; text-align: center;">
+                <h2 style="margin: 0;">FACTTIC - Plenario 2025</h2>
+                <p style="color: var(--color-texto-secundario);">${fecha}</p>
+            </div>`;
+
+            estado.equipos.filter(e => e.activo).forEach(equipo => {
+                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
+                const preguntas = equipo.preguntas || [];
+                const accionables = equipo.accionables || [];
+                const responsables = equipo.responsables || [];
+
+                html += `
+                <div class="equipo-seccion">
+                    <div class="equipo-titulo" style="color: ${equipo.color}">${equipo.nombre}</div>
+                    <div class="equipo-tema">${equipo.tema || ''}</div>
+
+                    <div class="seccion-titulo">Preguntas disparadoras</div>
+                    ${preguntas.length > 0 ? `
+                        <ul class="lista-items">
+                            ${preguntas.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    ` : '<p class="sin-datos">Sin preguntas</p>'}
+
+                    <div class="seccion-titulo">Participantes (${participantes.length})</div>
+                    ${personas.length > 0 ? `
+                        <ul class="lista-items">
+                            ${personas.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    ` : '<p class="sin-datos">Sin participantes</p>'}
+
+                    <div class="seccion-titulo">Cooperativas (${cooperativas.length})</div>
+                    ${cooperativas.length > 0 ? `
+                        <p>${cooperativas.join(', ')}</p>
+                    ` : '<p class="sin-datos">Sin cooperativas</p>'}
+
+                    <div class="seccion-titulo">Reflexión del grupo</div>
+                    ${equipo.reflexion ? `
+                        <div class="reflexion-box">${equipo.reflexion}</div>
+                    ` : '<p class="sin-datos">Sin reflexión cargada</p>'}
+
+                    <div class="seccion-titulo">Accionables</div>
+                    ${accionables.filter(a => a && a.trim()).length > 0 ? `
+                        <div>
+                            ${accionables.map((acc, i) => {
+                                if (!acc || !acc.trim()) return '';
+                                return `<div class="accionable-item">
+                                    <strong>${i + 1}.</strong> ${acc}
+                                    ${responsables[i] ? `<div class="responsable">→ ${responsables[i]}</div>` : ''}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    ` : '<p class="sin-datos">Sin accionables cargados</p>'}
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('modalInforme').classList.add('activo');
+        }
+
+        function cerrarInforme() {
+            document.getElementById('modalInforme').classList.remove('activo');
+        }
+
+        function copiarInforme() {
+            const content = document.getElementById('informeContent');
+
+            // Generar texto plano
+            let texto = 'FACTTIC - Plenario 2025\n';
+            texto += new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '\n\n';
+            texto += '='.repeat(50) + '\n\n';
+
+            estado.equipos.filter(e => e.activo).forEach(equipo => {
+                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
+                const preguntas = equipo.preguntas || [];
+                const accionables = equipo.accionables || [];
+                const responsables = equipo.responsables || [];
+
+                texto += `📌 ${equipo.nombre.toUpperCase()}\n`;
+                texto += `${equipo.tema || ''}\n\n`;
+
+                texto += `PREGUNTAS DISPARADORAS:\n`;
+                preguntas.forEach((p, i) => texto += `  ${i + 1}. ${p}\n`);
+                texto += '\n';
+
+                texto += `PARTICIPANTES (${participantes.length}):\n`;
+                personas.forEach(p => texto += `  • ${p}\n`);
+                texto += '\n';
+
+                texto += `COOPERATIVAS: ${cooperativas.join(', ')}\n\n`;
+
+                texto += `REFLEXIÓN:\n${equipo.reflexion || 'Sin reflexión'}\n\n`;
+
+                texto += `ACCIONABLES:\n`;
+                accionables.forEach((acc, i) => {
+                    if (acc && acc.trim()) {
+                        texto += `  ${i + 1}. ${acc}`;
+                        if (responsables[i]) texto += ` → ${responsables[i]}`;
+                        texto += '\n';
+                    }
+                });
+
+                texto += '\n' + '='.repeat(50) + '\n\n';
+            });
+
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('Informe copiado al portapapeles');
+            }).catch(() => {
+                alert('Error al copiar. Seleccioná el texto manualmente.');
+            });
+        }
+
+        function exportarPDF() {
+            const fecha = new Date().toLocaleDateString('es-AR', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            let contenidoEquipos = '';
+
+            estado.equipos.filter(e => e.activo).forEach(equipo => {
+                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
+                const preguntas = equipo.preguntas || [];
+                const accionables = equipo.accionables || [];
+                const responsables = equipo.responsables || [];
+
+                contenidoEquipos += `
+                <div class="equipo-seccion">
+                    <h2 style="color: ${equipo.color}; border-bottom: 3px solid ${equipo.color}; padding-bottom: 0.5rem;">${equipo.nombre}</h2>
+                    <p class="tema">${equipo.tema || ''}</p>
+
+                    <h3>Preguntas disparadoras</h3>
+                    ${preguntas.length > 0 ? `<ol>${preguntas.map(p => `<li>${p}</li>`).join('')}</ol>` : '<p class="sin-datos">Sin preguntas</p>'}
+
+                    <h3>Participantes (${participantes.length})</h3>
+                    ${personas.length > 0 ? `<ul>${personas.map(p => `<li>${p}</li>`).join('')}</ul>` : '<p class="sin-datos">Sin participantes</p>'}
+
+                    <h3>Cooperativas participantes</h3>
+                    <p>${cooperativas.length > 0 ? cooperativas.join(' • ') : 'Sin cooperativas'}</p>
+
+                    <h3>Reflexión del grupo</h3>
+                    ${equipo.reflexion ? `<div class="reflexion-box">${equipo.reflexion}</div>` : '<p class="sin-datos">Sin reflexión cargada</p>'}
+
+                    <h3>Accionables</h3>
+                    ${accionables.filter(a => a && a.trim()).length > 0 ? `
+                        <table class="accionables-table">
+                            <thead><tr><th>#</th><th>Accionable</th><th>Responsable</th></tr></thead>
+                            <tbody>
+                                ${accionables.map((acc, i) => {
+                                    if (!acc || !acc.trim()) return '';
+                                    return `<tr><td>${i + 1}</td><td>${acc}</td><td>${responsables[i] || '-'}</td></tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    ` : '<p class="sin-datos">Sin accionables cargados</p>'}
+                </div>`;
+            });
+
+            const ventana = window.open('', '_blank');
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Informe Debate FACTTIC - Plenario 2025</title>
+                    <style>
+                        * { box-sizing: border-box; }
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            max-width: 900px;
+                            margin: 0 auto;
+                            padding: 2rem;
+                            color: #1e293b;
+                            line-height: 1.6;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 3rem;
+                            padding-bottom: 2rem;
+                            border-bottom: 2px solid #e2e8f0;
+                        }
+                        .header img {
+                            height: 60px;
+                            background: #1e293b;
+                            padding: 0.5rem 1rem;
+                            border-radius: 8px;
+                        }
+                        .header h1 {
+                            margin: 1rem 0 0.5rem;
+                            color: #1e293b;
+                        }
+                        .header .fecha {
+                            color: #64748b;
+                        }
+                        .equipo-seccion {
+                            margin-bottom: 3rem;
+                            page-break-inside: avoid;
+                        }
+                        .equipo-seccion h2 {
+                            margin-top: 0;
+                        }
+                        .equipo-seccion .tema {
+                            color: #64748b;
+                            font-style: italic;
+                            margin-bottom: 1.5rem;
+                        }
+                        .equipo-seccion h3 {
+                            color: #475569;
+                            font-size: 1rem;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            margin: 1.5rem 0 0.5rem;
+                            border-bottom: 1px solid #e2e8f0;
+                            padding-bottom: 0.25rem;
+                        }
+                        ul, ol {
+                            margin: 0.5rem 0;
+                            padding-left: 1.5rem;
+                        }
+                        li { margin-bottom: 0.25rem; }
+                        .reflexion-box {
+                            background: #f8fafc;
+                            padding: 1rem;
+                            border-radius: 8px;
+                            border-left: 4px solid #3b82f6;
+                        }
+                        .accionables-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 0.5rem;
+                        }
+                        .accionables-table th, .accionables-table td {
+                            border: 1px solid #e2e8f0;
+                            padding: 0.75rem;
+                            text-align: left;
+                        }
+                        .accionables-table th {
+                            background: #f1f5f9;
+                            font-weight: 600;
+                        }
+                        .accionables-table td:first-child {
+                            width: 40px;
+                            text-align: center;
+                        }
+                        .sin-datos {
+                            color: #94a3b8;
+                            font-style: italic;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            .equipo-seccion { page-break-inside: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="logo_facttic.png" alt="FACTTIC">
+                        <h1>Informe del Debate</h1>
+                        <p class="subtitulo">Plenario FACTTIC 2025</p>
+                        <p class="fecha">${fecha}</p>
+                    </div>
+                    ${contenidoEquipos}
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+
+            // Esperar a que cargue y abrir diálogo de impresión
+            setTimeout(() => {
+                ventana.print();
+            }, 500);
         }
 
         // Tabs
