@@ -161,6 +161,13 @@
 
         .sugerencia.activa {
             display: block;
+            animation: sugerenciaPulso 0.5s ease-out;
+        }
+
+        @keyframes sugerenciaPulso {
+            0% { transform: scale(0.95); opacity: 0; }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .sugerencia p {
@@ -1176,6 +1183,10 @@
         function mostrarSugerencia(sugerencia) {
             document.getElementById('sugerenciaTexto').textContent = sugerencia.mensaje;
             document.getElementById('sugerencia').classList.add('activa');
+
+            // Scroll al tope para que se vea la sugerencia
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('sugerencia').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             document.getElementById('btnAceptarSugerencia').onclick = async () => {
                 document.getElementById('sugerencia').classList.remove('activa');
