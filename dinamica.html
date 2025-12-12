@@ -214,16 +214,18 @@
 
         .btn-logout {
             display: block;
-            color: var(--color-texto-secundario);
-            font-size: 0.85rem;
+            color: var(--color-texto);
+            font-size: 1rem;
             text-decoration: none;
             margin-top: 1.5rem;
             text-align: center;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
         }
 
         .btn-logout:hover {
-            color: var(--color-texto);
-            text-decoration: underline;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* Formulario */
@@ -790,6 +792,8 @@
                 <div class="spinner"></div>
             </div>
         </div>
+
+        <a href="#" class="btn-logout" id="btnLogout">🚪 Salir y cambiar de persona</a>
     </div>
 
     <!-- PANTALLA 3: Confirmación -->
@@ -816,7 +820,6 @@
             <button class="btn" id="btnCambiarEquipo">Cambiar de equipo</button>
             <button class="btn btn-success" id="btnTerminamos">Cargar conclusiones ✓</button>
         </div>
-        <a href="#" class="btn-logout" id="btnLogout">Salir y cambiar de persona</a>
     </div>
 
     <!-- PANTALLA 4: Formulario de cierre -->
