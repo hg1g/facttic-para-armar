@@ -627,6 +627,18 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        .vista-proyectable .equipo-proyectable .estado-debatiendo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            animation: pulso 2s ease-in-out infinite;
+        }
+
+        @keyframes pulso {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         /* Modal resultados - Estilo slide */
         .modal-resultados {
             position: fixed;
@@ -1354,8 +1366,10 @@
                 // Un equipo está LISTO si tiene cierre (reflexion + accionables)
                 const equipoListo = equipo.reflexion && equipo.accionables && equipo.accionables.length > 0;
 
+                const debatiendo = total > 0 && !equipoListo;
+
                 return `
-                    <div class="equipo-proyectable ${equipoListo ? 'todos-terminados' : ''}" style="border-color: ${equipo.color}">
+                    <div class="equipo-proyectable ${equipoListo ? 'todos-terminados' : ''} ${debatiendo ? 'debatiendo' : ''}" style="border-color: ${equipo.color}">
                         ${equipoListo ? `
                             <div class="overlay-terminado" style="background: ${equipo.color}">
                                 <div class="listo-equipo-nombre">${equipo.nombre}</div>
@@ -1367,6 +1381,7 @@
                             <div class="nombre" style="color: ${equipo.color}">${equipo.nombre}</div>
                             <div class="contador" style="color: ${equipo.color}">${total}</div>
                         </div>
+                        ${debatiendo ? `<div class="estado-debatiendo" style="color: ${equipo.color}">💬 Debatiendo...</div>` : ''}
                         <div class="cooperativas-lista">${cooperativas.join(', ') || '-'}</div>
                         ${equipo.google_doc ? `<a href="${equipo.google_doc}" target="_blank" style="color: white; font-size: 1rem; margin-top: 0.5rem; display: block;">📄 Abrir Doc</a>` : ''}
                     </div>
