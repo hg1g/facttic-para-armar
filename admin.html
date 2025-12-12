@@ -688,6 +688,8 @@
         .modal-resultados .seccion {
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .modal-resultados .seccion h3 {
@@ -713,29 +715,31 @@
         .modal-resultados .accionables-lista {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1rem;
             flex: 1;
-            justify-content: center;
+            overflow-y: auto;
+            padding-right: 0.5rem;
         }
 
         .modal-resultados .accionable-item {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            flex-shrink: 0;
         }
 
         .modal-resultados .accionable-item .numero {
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.6rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
             color: white;
         }
@@ -745,14 +749,14 @@
         }
 
         .modal-resultados .accionable-item .texto {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             line-height: 1.4;
         }
 
         .modal-resultados .accionable-item .responsable {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #94a3b8;
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
         }
 
         /* Responsive */
@@ -1394,15 +1398,19 @@
             document.getElementById('resultadosTema').textContent = equipo.tema || '';
             document.getElementById('resultadosReflexion').textContent = equipo.reflexion;
 
-            // Accionables
+            // Accionables - solo mostrar los que tienen contenido
             const accionablesContainer = document.getElementById('resultadosAccionables');
             const responsables = equipo.responsables || [];
-            accionablesContainer.innerHTML = equipo.accionables.map((acc, i) => `
+            const accionablesConContenido = equipo.accionables
+                .map((acc, i) => ({ acc, responsable: responsables[i], index: i }))
+                .filter(item => item.acc && item.acc.trim());
+
+            accionablesContainer.innerHTML = accionablesConContenido.map((item, displayIndex) => `
                 <div class="accionable-item">
-                    <div class="numero" style="background: ${equipo.color}">${i + 1}</div>
+                    <div class="numero" style="background: ${equipo.color}">${displayIndex + 1}</div>
                     <div class="texto-container">
-                        <div class="texto">${acc}</div>
-                        ${responsables[i] ? `<div class="responsable">→ ${responsables[i]}</div>` : ''}
+                        <div class="texto">${item.acc}</div>
+                        ${item.responsable ? `<div class="responsable">→ ${item.responsable}</div>` : ''}
                     </div>
                 </div>
             `).join('');
