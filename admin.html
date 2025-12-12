@@ -1765,11 +1765,23 @@
             const container = document.getElementById('equiposProyectable');
 
             container.innerHTML = estado.equipos.filter(e => e.activo).map(equipo => {
-                const participantesEquipo = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                const participantesRaw = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                // Deduplicar participantes (case insensitive)
+                const partMap = new Map();
+                participantesRaw.forEach(p => {
+                    const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                    if (!partMap.has(key)) partMap.set(key, p);
+                });
+                const participantesEquipo = [...partMap.values()];
                 const total = participantesEquipo.length;
 
-                // Obtener cooperativas únicas en este equipo
-                const cooperativas = [...new Set(participantesEquipo.map(p => p.cooperativa))];
+                // Deduplicar cooperativas (case insensitive)
+                const coopMap = new Map();
+                participantesEquipo.forEach(p => {
+                    const key = p.cooperativa.toLowerCase().trim();
+                    if (!coopMap.has(key)) coopMap.set(key, p.cooperativa);
+                });
+                const cooperativas = [...coopMap.values()];
 
                 // Un equipo está LISTO si tiene cierre (reflexion + accionables)
                 const equipoListo = equipo.reflexion && equipo.accionables && equipo.accionables.length > 0;
