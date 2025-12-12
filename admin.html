@@ -542,6 +542,45 @@
             background: rgba(0, 0, 0, 0.1);
         }
 
+        /* Modo claro - Modales */
+        .modal-resultados.modo-claro,
+        .modal-descripcion.modo-claro {
+            background: #f1f5f9;
+        }
+
+        .modal-resultados.modo-claro .equipo-titulo,
+        .modal-resultados.modo-claro .seccion h3,
+        .modal-descripcion.modo-claro .equipo-titulo,
+        .modal-descripcion.modo-claro .seccion h3 {
+            color: #1e293b;
+        }
+
+        .modal-resultados.modo-claro .equipo-tema,
+        .modal-resultados.modo-claro .accionable-item .responsable,
+        .modal-descripcion.modo-claro .seccion h3 {
+            color: #64748b;
+        }
+
+        .modal-resultados.modo-claro .reflexion-texto,
+        .modal-resultados.modo-claro .accionable-item,
+        .modal-descripcion.modo-claro .descripcion-texto,
+        .modal-descripcion.modo-claro .preguntas-lista li {
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-resultados.modo-claro .accionable-item .texto,
+        .modal-descripcion.modo-claro .descripcion-texto {
+            color: #1e293b;
+        }
+
+        .modal-resultados.modo-claro .cerrar-modal,
+        .modal-descripcion.modo-claro .cerrar-modal {
+            background: rgba(0, 0, 0, 0.1);
+            color: #1e293b;
+        }
+
         .vista-proyectable .header-proyectable {
             display: flex;
             justify-content: center;
@@ -1641,9 +1680,13 @@
         }
 
         function toggleModoClaro() {
-            const vista = document.getElementById('vistaProyectable');
             const checkbox = document.getElementById('switchModoClaro');
-            vista.classList.toggle('modo-claro', checkbox.checked);
+            const elementos = [
+                document.getElementById('vistaProyectable'),
+                document.getElementById('modalResultados'),
+                document.getElementById('modalDescripcion')
+            ];
+            elementos.forEach(el => el.classList.toggle('modo-claro', checkbox.checked));
         }
 
         // Modal de resultados
