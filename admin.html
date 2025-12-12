@@ -526,10 +526,20 @@
             font-weight: 600;
         }
 
+        .vista-proyectable .equipo-proyectable .contador-container {
+            text-align: center;
+        }
+
         .vista-proyectable .equipo-proyectable .contador {
             font-size: 4rem;
             font-weight: bold;
             line-height: 1;
+        }
+
+        .vista-proyectable .equipo-proyectable .contador-label {
+            font-size: 0.9rem;
+            color: var(--color-texto-secundario);
+            margin-top: 0.25rem;
         }
 
         .vista-proyectable .equipo-proyectable.todos-terminados {
@@ -1379,7 +1389,10 @@
                         ` : ''}
                         <div class="equipo-header">
                             <div class="nombre" style="color: ${equipo.color}">${equipo.nombre}</div>
-                            <div class="contador" style="color: ${equipo.color}">${total}</div>
+                            <div class="contador-container">
+                                <div class="contador" style="color: ${equipo.color}">${total}</div>
+                                <div class="contador-label">personas</div>
+                            </div>
                         </div>
                         ${debatiendo ? `<div class="estado-debatiendo" style="color: ${equipo.color}">💬 Debatiendo...</div>` : ''}
                         <div class="cooperativas-lista">${cooperativas.join(', ') || '-'}</div>
