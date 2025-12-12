@@ -212,6 +212,20 @@
             background: rgba(255,255,255,0.3);
         }
 
+        .btn-logout {
+            display: block;
+            color: var(--color-texto-secundario);
+            font-size: 0.85rem;
+            text-decoration: none;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .btn-logout:hover {
+            color: var(--color-texto);
+            text-decoration: underline;
+        }
+
         /* Formulario */
         .formulario {
             flex: 1;
@@ -802,6 +816,7 @@
             <button class="btn" id="btnCambiarEquipo">Cambiar de equipo</button>
             <button class="btn btn-success" id="btnTerminamos">Cargar conclusiones ✓</button>
         </div>
+        <a href="#" class="btn-logout" id="btnLogout">Salir y cambiar de persona</a>
     </div>
 
     <!-- PANTALLA 4: Formulario de cierre -->
@@ -1417,6 +1432,52 @@
             renderizarEquipos();
         }
 
+        // Logout - salir y permitir registrarse de nuevo
+        async function logout() {
+            if (!confirm('¿Seguro que querés salir? Se borrará tu registro.')) {
+                return;
+            }
+
+            try {
+                // Borrar participante de la base de datos
+                if (estado.participante) {
+                    await supabase
+                        .from('participantes')
+                        .delete()
+                        .eq('id', estado.participante.id);
+                }
+
+                // Limpiar localStorage
+                localStorage.removeItem('facttic_nombre');
+                localStorage.removeItem('facttic_cooperativa');
+                localStorage.removeItem('facttic_device_id');
+
+                // Limpiar estado
+                estado.participante = null;
+                estado.nombreUsuario = null;
+                estado.cooperativaUsuario = null;
+                estado.equipoSeleccionado = null;
+                estado.deviceId = getDeviceId(); // Genera nuevo ID
+
+                // Limpiar inputs
+                document.getElementById('inputNombreRegistro').value = '';
+                document.getElementById('inputCooperativaRegistro').value = '';
+
+                // Recargar contadores
+                const { data: participantes } = await supabase.from('participantes').select('*');
+                if (participantes) {
+                    calcularContadores(participantes);
+                    renderizarEquipos();
+                }
+
+                // Volver a pantalla de registro
+                mostrarPantalla('pantallaRegistro');
+            } catch (error) {
+                console.error('Error al hacer logout:', error);
+                alert('Error al salir. Recargá la página.');
+            }
+        }
+
         // Control de alertas - usa localStorage para persistir entre recargas
         function alertaYaMostrada(tipo, timerEnd) {
             if (!timerEnd) return true; // Si no hay timer, no mostrar
@@ -1642,6 +1703,7 @@
         // Event listeners
         document.getElementById('btnContinuar').addEventListener('click', continuarRegistro);
         document.getElementById('btnCambiarEquipo').addEventListener('click', cambiarEquipo);
+        document.getElementById('btnLogout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
         document.getElementById('btnTerminamos').addEventListener('click', mostrarPantallaCierre);
         document.getElementById('btnEnviarCierre').addEventListener('click', enviarCierre);
         document.getElementById('btnCancelarCierre').addEventListener('click', () => mostrarConfirmacion(false));
