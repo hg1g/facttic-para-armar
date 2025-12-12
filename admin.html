@@ -581,6 +581,12 @@
             color: #1e293b;
         }
 
+        .vista-proyectable.modo-claro .header-proyectable img {
+            background: #1e293b;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
         .vista-proyectable .header-proyectable {
             display: flex;
             justify-content: center;
@@ -1687,7 +1693,19 @@
                 document.getElementById('modalDescripcion')
             ];
             elementos.forEach(el => el.classList.toggle('modo-claro', checkbox.checked));
+            localStorage.setItem('facttic_modo_claro', checkbox.checked);
         }
+
+        // Inicializar modo claro desde localStorage
+        function initModoClaro() {
+            const modoClaro = localStorage.getItem('facttic_modo_claro') === 'true';
+            const checkbox = document.getElementById('switchModoClaro');
+            checkbox.checked = modoClaro;
+            if (modoClaro) {
+                toggleModoClaro();
+            }
+        }
+        initModoClaro();
 
         // Modal de resultados
         function mostrarResultados(equipoId) {
