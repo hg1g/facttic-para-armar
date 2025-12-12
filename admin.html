@@ -1900,14 +1900,56 @@
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
 
+            // Calcular totales generales (normalizando mayúsculas/minúsculas)
+            const personasMap = new Map();
+            estado.participantes.forEach(p => {
+                const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                if (!personasMap.has(key)) personasMap.set(key, p);
+            });
+            const totalPersonas = personasMap.size;
+            const coopMap = new Map();
+            estado.participantes.forEach(p => {
+                const key = p.cooperativa.toLowerCase().trim();
+                if (!coopMap.has(key)) coopMap.set(key, p.cooperativa);
+            });
+            const todasCooperativas = [...coopMap.values()];
+            const totalCooperativas = todasCooperativas.length;
+
             let html = `<div style="margin-bottom: 2rem; text-align: center;">
                 <h2 style="margin: 0;">FACTTIC - Plenario 2025</h2>
+                <p style="color: var(--color-texto-secundario);">Tandil, Provincia de Buenos Aires</p>
                 <p style="color: var(--color-texto-secundario);">${fecha}</p>
+                <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem;">
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--color-primario);">${totalPersonas}</div>
+                        <div style="color: var(--color-texto-secundario); font-size: 0.9rem;">personas</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--color-primario);">${totalCooperativas}</div>
+                        <div style="color: var(--color-texto-secundario); font-size: 0.9rem;">cooperativas</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; color: var(--color-texto-secundario); font-size: 0.85rem;">
+                    ${todasCooperativas.sort().join(' • ')}
+                </div>
             </div>`;
 
             estado.equipos.filter(e => e.activo).forEach(equipo => {
-                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
-                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const participantesRaw = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                // Deduplicar participantes por nombre+cooperativa (case insensitive)
+                const partMap = new Map();
+                participantesRaw.forEach(p => {
+                    const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                    if (!partMap.has(key)) partMap.set(key, p);
+                });
+                const participantes = [...partMap.values()];
+                // Deduplicar cooperativas (case insensitive)
+                const coopMapEquipo = new Map();
+                participantes.forEach(p => {
+                    const key = p.cooperativa.toLowerCase().trim();
+                    if (!coopMapEquipo.has(key)) coopMapEquipo.set(key, p.cooperativa);
+                });
+                const cooperativas = [...coopMapEquipo.values()];
                 const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
                 const preguntas = equipo.preguntas || [];
                 const accionables = equipo.accionables || [];
@@ -1974,8 +2016,21 @@
             texto += '='.repeat(50) + '\n\n';
 
             estado.equipos.filter(e => e.activo).forEach(equipo => {
-                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
-                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const participantesRaw = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                // Deduplicar participantes por nombre+cooperativa (case insensitive)
+                const partMap = new Map();
+                participantesRaw.forEach(p => {
+                    const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                    if (!partMap.has(key)) partMap.set(key, p);
+                });
+                const participantes = [...partMap.values()];
+                // Deduplicar cooperativas (case insensitive)
+                const coopMapEquipo = new Map();
+                participantes.forEach(p => {
+                    const key = p.cooperativa.toLowerCase().trim();
+                    if (!coopMapEquipo.has(key)) coopMapEquipo.set(key, p.cooperativa);
+                });
+                const cooperativas = [...coopMapEquipo.values()];
                 const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
                 const preguntas = equipo.preguntas || [];
                 const accionables = equipo.accionables || [];
@@ -2020,11 +2075,39 @@
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
 
+            // Calcular totales generales (normalizando mayúsculas/minúsculas)
+            const personasMap = new Map();
+            estado.participantes.forEach(p => {
+                const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                if (!personasMap.has(key)) personasMap.set(key, p);
+            });
+            const totalPersonas = personasMap.size;
+            const coopMap = new Map();
+            estado.participantes.forEach(p => {
+                const key = p.cooperativa.toLowerCase().trim();
+                if (!coopMap.has(key)) coopMap.set(key, p.cooperativa);
+            });
+            const todasCooperativas = [...coopMap.values()];
+            const totalCooperativas = todasCooperativas.length;
+
             let contenidoEquipos = '';
 
             estado.equipos.filter(e => e.activo).forEach(equipo => {
-                const participantes = estado.participantes.filter(p => p.equipo_id === equipo.id);
-                const cooperativas = [...new Set(participantes.map(p => p.cooperativa))];
+                const participantesRaw = estado.participantes.filter(p => p.equipo_id === equipo.id);
+                // Deduplicar participantes por nombre+cooperativa (case insensitive)
+                const partMap = new Map();
+                participantesRaw.forEach(p => {
+                    const key = (p.nombre + '|' + p.cooperativa).toLowerCase().trim();
+                    if (!partMap.has(key)) partMap.set(key, p);
+                });
+                const participantes = [...partMap.values()];
+                // Deduplicar cooperativas (case insensitive)
+                const coopMapEquipo = new Map();
+                participantes.forEach(p => {
+                    const key = p.cooperativa.toLowerCase().trim();
+                    if (!coopMapEquipo.has(key)) coopMapEquipo.set(key, p.cooperativa);
+                });
+                const cooperativas = [...coopMapEquipo.values()];
                 const personas = participantes.map(p => `${p.nombre} (${p.cooperativa})`);
                 const preguntas = equipo.preguntas || [];
                 const accionables = equipo.accionables || [];
@@ -2098,6 +2181,30 @@
                         .header .fecha {
                             color: #64748b;
                         }
+                        .header .ubicacion {
+                            color: #64748b;
+                            margin: 0.25rem 0;
+                        }
+                        .stats {
+                            display: flex;
+                            justify-content: center;
+                            gap: 4rem;
+                            margin-top: 1.5rem;
+                        }
+                        .stat-numero {
+                            font-size: 2.5rem;
+                            font-weight: bold;
+                            color: #3b82f6;
+                        }
+                        .stat-label {
+                            color: #64748b;
+                            font-size: 0.9rem;
+                        }
+                        .lista-coops {
+                            margin-top: 1.5rem;
+                            color: #64748b;
+                            font-size: 0.85rem;
+                        }
                         .equipo-seccion {
                             margin-bottom: 3rem;
                             page-break-inside: avoid;
@@ -2163,7 +2270,19 @@
                         <img src="logo_facttic.png" alt="FACTTIC">
                         <h1>Informe del Debate</h1>
                         <p class="subtitulo">Plenario FACTTIC 2025</p>
+                        <p class="ubicacion">Tandil, Provincia de Buenos Aires</p>
                         <p class="fecha">${fecha}</p>
+                        <div class="stats">
+                            <div>
+                                <div class="stat-numero">${totalPersonas}</div>
+                                <div class="stat-label">personas</div>
+                            </div>
+                            <div>
+                                <div class="stat-numero">${totalCooperativas}</div>
+                                <div class="stat-label">cooperativas</div>
+                            </div>
+                        </div>
+                        <p class="lista-coops">${todasCooperativas.sort().join(' • ')}</p>
                     </div>
                     ${contenidoEquipos}
                 </body>
