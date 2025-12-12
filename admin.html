@@ -456,11 +456,90 @@
             flex-direction: column;
         }
 
-        .vista-proyectable .cerrar {
+        .vista-proyectable .controles-proyectable {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .vista-proyectable .switch-tema {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .vista-proyectable .switch-tema input {
+            display: none;
+        }
+
+        .vista-proyectable .switch-tema .slider {
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .vista-proyectable .switch-tema .slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .vista-proyectable .switch-tema input:checked + .slider {
+            background: var(--color-primary);
+        }
+
+        .vista-proyectable .switch-tema input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        .vista-proyectable .switch-tema .switch-label {
+            font-size: 0.9rem;
+            color: var(--color-texto-secundario);
+        }
+
+        /* Modo claro */
+        .vista-proyectable.modo-claro {
+            background: #f1f5f9;
+        }
+
+        .vista-proyectable.modo-claro h1,
+        .vista-proyectable.modo-claro .switch-label {
+            color: #1e293b;
+        }
+
+        .vista-proyectable.modo-claro .equipo-proyectable {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .vista-proyectable.modo-claro .equipo-proyectable .contador-label,
+        .vista-proyectable.modo-claro .equipo-proyectable .cooperativas-lista {
+            color: #64748b;
+        }
+
+        .vista-proyectable.modo-claro .equipo-proyectable .btn-ver-descripcion,
+        .vista-proyectable.modo-claro .equipo-proyectable .btn-google-doc-proyectable {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .vista-proyectable.modo-claro .equipo-proyectable .btn-ver-descripcion:hover,
+        .vista-proyectable.modo-claro .equipo-proyectable .btn-google-doc-proyectable:hover {
+            background: rgba(0, 0, 0, 0.1);
         }
 
         .vista-proyectable .header-proyectable {
@@ -1053,7 +1132,14 @@
 
     <!-- Vista Proyectable -->
     <div class="vista-proyectable" id="vistaProyectable">
-        <button class="btn btn-secondary cerrar" onclick="cerrarVistaProyectable()">✕ Cerrar</button>
+        <div class="controles-proyectable">
+            <label class="switch-tema">
+                <input type="checkbox" id="switchModoClaro" onchange="toggleModoClaro()">
+                <span class="slider"></span>
+                <span class="switch-label">☀️ Modo claro</span>
+            </label>
+            <button class="btn btn-secondary cerrar" onclick="cerrarVistaProyectable()">✕ Cerrar</button>
+        </div>
         <div class="header-proyectable">
             <img src="logo_facttic.png" alt="FACTTIC" style="height: 50px;">
             <h1>Dinámica de Grupos</h1>
@@ -1552,6 +1638,12 @@
 
         function cerrarVistaProyectable() {
             document.getElementById('vistaProyectable').classList.remove('activo');
+        }
+
+        function toggleModoClaro() {
+            const vista = document.getElementById('vistaProyectable');
+            const checkbox = document.getElementById('switchModoClaro');
+            vista.classList.toggle('modo-claro', checkbox.checked);
         }
 
         // Modal de resultados
